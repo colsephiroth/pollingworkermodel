@@ -97,7 +97,9 @@ type CustomJob struct {
 
 func main() {
 	// initialize the worker with the generic job type, generic result type,
-	// queueURL, the worker authorization key, and the optional QueueWorkerOptions.
+	// queueURL, the worker authorization key, and the optional Options.
+	// the Options type can be constructed with the NewOptions(...Option)
+	// functional option pattern
 	worker, err := client.NewQueueWorker[*CustomJob, string](
 		"http://localhost:8888/queue",
 		"<worker-authorization-key>",
