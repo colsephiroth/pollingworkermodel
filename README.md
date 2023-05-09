@@ -84,7 +84,6 @@ package main
 import (
 	"fmt"
 	"github.com/colsephiroth/pollingworkermodel/client"
-	"github.com/colsephiroth/pollingworkermodel/common"
 )
 
 // Custom job information needed by the client to do whatever it needs to do,
@@ -108,26 +107,10 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
-	for {
-		// get queued up job from the job channel
-		job := worker.GetNewJob()
-		
-		go func(j *common.Job[*CustomJob, string]) {
-			result, err := DoSomething(j.Job)
-			if err != nil {
-				j.Status = common.Error
-				j.Result = err.Error()
-			} else {
-				j.Status = common.Complete
-				// result should be of type R defined in client.NewQueueWorker[J, R]()
-				j.Result = result
-			}
-
-			// queue up completed job to be sent back to the server
-			worker.PostJobResult(j)
-		}(job)
-	}
+	
+	// takes a function which takes J as a parameter which is *CustomJob in this case,
+	// and returns (R, error) which is (string, error) in this case.
+	worker.ProcessJobs(DoSomething)
 }
 
 // do something with the job recieved from the server
