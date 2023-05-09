@@ -20,8 +20,8 @@ import (
 	"encoding/json"
 	"net/http"
 	
-	"github.com/fillingc/pollingworkermodel/common"
-	"github.com/fillingc/pollingworkermodel/server"
+	"github.com/colsephiroth/pollingworkermodel/common"
+	"github.com/colsephiroth/pollingworkermodel/server"
 	"github.com/go-chi/chi"
 )
 
@@ -83,8 +83,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/fillingc/pollingworkermodel/client"
-	"github.com/fillingc/pollingworkermodel/common"
+	"github.com/colsephiroth/pollingworkermodel/client"
+	"github.com/colsephiroth/pollingworkermodel/common"
 )
 
 // Custom job information needed by the client to do whatever it needs to do,
