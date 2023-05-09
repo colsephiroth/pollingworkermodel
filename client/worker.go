@@ -50,6 +50,25 @@ func NewQueueWorker[J, R any](queueURL, authorization string, options *Options) 
 	return worker, nil
 }
 
+func (w *QueueWorker[J, R]) ProcessJobs(f func(J) (R, error)) {
+	for {
+		job := w.GetNewJob()
+
+		go func(j *common.Job[J, R]) {
+			result, err := f(j.Job)
+			if err != nil {
+				j.Status = common.Error
+				j.Error = err.Error()
+			} else {
+				j.Status = common.Complete
+				j.Result = result
+			}
+
+			w.PostJobResult(j)
+		}(job)
+	}
+}
+
 func (w *QueueWorker[J, R]) GetNewJob() *common.Job[J, R] {
 	return <-w.jobChannel
 }
