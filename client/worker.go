@@ -57,14 +57,18 @@ func (w *QueueWorker[J, R]) ProcessJobs(f func(J) (R, error)) {
 		go func(j common.Job[J, R]) {
 			result, err := f(j.Job)
 			if err != nil {
-				j.Status = common.Error
-				j.Error = err.Error()
+				w.PostJobResult(common.Job[J, R]{
+					ID:     j.ID,
+					Status: common.Error,
+					Error:  err.Error(),
+				})
 			} else {
-				j.Status = common.Complete
-				j.Result = result
+				w.PostJobResult(common.Job[J, R]{
+					ID:     j.ID,
+					Status: common.Complete,
+					Result: result,
+				})
 			}
-
-			w.PostJobResult(j)
 		}(job)
 	}
 }
