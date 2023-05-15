@@ -4,11 +4,13 @@ import (
 	"github.com/alphadose/haxmap"
 	"github.com/colsephiroth/pollingworkermodel/common"
 	"github.com/teris-io/shortid"
+	"sync"
 )
 
 type QueueServer[J, R any] struct {
 	queue         *haxmap.Map[string, *common.Job[J, R]]
 	authorization string
+	sync.Mutex
 }
 
 func NewQueueServer[T, R any](authorization string) *QueueServer[T, R] {
@@ -81,15 +83,16 @@ func (q *QueueServer[J, R]) AddWaitJob(content J) *common.Job[J, R] {
 func (q *QueueServer[J, R]) NewJobs() []*common.Job[J, R] {
 	var jobs []*common.Job[J, R]
 
+	q.Lock()
 	q.queue.ForEach(func(k string, j *common.Job[J, R]) bool {
 		if j.Status == common.New {
 			jobs = append(jobs, j)
 			j.Status = common.Pending
-			q.UpdateJob(j)
 		}
 
 		return true
 	})
+	q.Unlock()
 
 	return jobs
 }
