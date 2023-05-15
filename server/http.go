@@ -39,7 +39,7 @@ func (q *QueueServer[J, R]) getNewJobsHandlerFunc(w http.ResponseWriter, r *http
 }
 
 func (q *QueueServer[J, R]) postJobResultsHandlerFunc(w http.ResponseWriter, r *http.Request) {
-	var job *common.Job[J, R]
+	var job common.Job[J, R]
 
 	if err := json.NewDecoder(r.Body).Decode(&job); err != nil {
 		log.Println(err)

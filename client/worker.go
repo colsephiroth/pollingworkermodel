@@ -16,8 +16,8 @@ type QueueWorker[J, R any] struct {
 	queueURL        *url.URL
 	authorization   string
 	getJobsTickRate time.Duration
-	jobChannel      chan *common.Job[J, R]
-	resultChannel   chan *common.Job[J, R]
+	jobChannel      chan common.Job[J, R]
+	resultChannel   chan common.Job[J, R]
 	httpClient      *http.Client
 }
 
@@ -39,8 +39,8 @@ func NewQueueWorker[J, R any](queueURL, authorization string, options *Options) 
 		authorization: authorization,
 
 		getJobsTickRate: opts.GetJobsTickRate,
-		jobChannel:      make(chan *common.Job[J, R], opts.JobChannelBufferSize),
-		resultChannel:   make(chan *common.Job[J, R], opts.ResultChannelBufferSize),
+		jobChannel:      make(chan common.Job[J, R], opts.JobChannelBufferSize),
+		resultChannel:   make(chan common.Job[J, R], opts.ResultChannelBufferSize),
 		httpClient:      opts.HttpClient,
 	}
 
@@ -54,7 +54,7 @@ func (w *QueueWorker[J, R]) ProcessJobs(f func(J) (R, error)) {
 	for {
 		job := w.GetNewJob()
 
-		go func(j *common.Job[J, R]) {
+		go func(j common.Job[J, R]) {
 			result, err := f(j.Job)
 			if err != nil {
 				j.Status = common.Error
@@ -69,11 +69,11 @@ func (w *QueueWorker[J, R]) ProcessJobs(f func(J) (R, error)) {
 	}
 }
 
-func (w *QueueWorker[J, R]) GetNewJob() *common.Job[J, R] {
+func (w *QueueWorker[J, R]) GetNewJob() common.Job[J, R] {
 	return <-w.jobChannel
 }
 
-func (w *QueueWorker[J, R]) PostJobResult(job *common.Job[J, R]) {
+func (w *QueueWorker[J, R]) PostJobResult(job common.Job[J, R]) {
 	w.resultChannel <- job
 }
 
@@ -83,7 +83,7 @@ func (w *QueueWorker[J, R]) getNewJobs() {
 	for {
 		select {
 		case <-ticker.C:
-			var jobs []*common.Job[J, R]
+			var jobs []common.Job[J, R]
 
 			req, err := http.NewRequest(http.MethodGet, w.queueURL.String()+"/jobs", nil)
 			if err != nil {
